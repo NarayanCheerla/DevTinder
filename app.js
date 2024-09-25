@@ -1,13 +1,14 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const connectDB = require("./config/database");
 
 const app = express();
 const PORT = 3000;
 
 app.use("/", (req, res) => {
     res.send("Server listening");
-})
-mongoose.connect("mongodb://localhost:27017/").then(() => {
+});
+
+connectDB().then(() => {
     console.log("Connected successfuly");
     app.listen(PORT, () => {
         console.log(`Listening on ${PORT}`);
