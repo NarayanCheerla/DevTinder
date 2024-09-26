@@ -1,13 +1,17 @@
 const bcrypt = require("bcrypt");
 const express = require("express");
+const jwt = require("jsonwebtoken");
+const cookeParser = require("cookie-parser");
 
 const User = require("./src/models/user");
 const connectDB = require("./src/config/database");
+const { userAuth } = require("./src/middlewares/auth");
 const { validateSignUpDate } = require("./src/utils/validation");
 
 const app = express();
 const PORT = 3000;
 
+app.use(cookeParser());
 app.use(express.json());
 
 app.get("/user", async (req, res) => {
@@ -113,6 +117,9 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (isPasswordValid) {
+            // Create JWT toekn
+            const token = await jwt.sign({ _id: user._id }, "Dev@Tinder@345");
+            res.cookie("token", token);
             res.send("Login successful !!");
         } else {
             throw new Error("Invalid credentials");
@@ -122,6 +129,18 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.get("/profile", userAuth, async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            throw new Error("Profile not found");
+        } else {
+            res.send(user);
+        }
+    } catch (err) {
+        res.status(400).send("Error while fetching user profile");
+    }
+})
 
 connectDB().then(() => {
     console.log("Connected successfuly");
