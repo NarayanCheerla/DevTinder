@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -11,10 +12,23 @@ const userSchema = new mongoose.Schema({
     emailId: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        lowercase: true,
+        trim: true,
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid email adress "+value);
+            }
+        }
     },
     password: {
-        type: String
+        type: String,
+        require: true,
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Enter a strong password "+value);
+            }
+        }
     },
     age: {
         type: Number
@@ -29,7 +43,12 @@ const userSchema = new mongoose.Schema({
     },
     photoUrl: {
         type: String,
-        default: "https://www.seblod.com/images/medias/62057/_thumb2/2205256774854474505_medium.jpg"
+        default: "https://www.seblod.com/images/medias/62057/_thumb2/2205256774854474505_medium.jpg",
+        validate(value){
+            if(!validator.isURL(value)){
+                throw new Error("Invalid photo url "+value);
+            }
+        }
     },
     about: {
         type: String,
