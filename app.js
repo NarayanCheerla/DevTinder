@@ -22,10 +22,21 @@ app.get("/user", async (req, res) => {
     }
 });
 
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+    const userId = req.params?.userId;
     const user = req.body;
+    const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
+    const isUpdatedAllowed = Object.keys(user).every(k => ALLOWED_UPDATES.includes(k));
+
+    if (!isUpdatedAllowed) {
+        res.status(400).send("Update not alowed");
+        return;
+    }
+    if (user?.skills.length > 10) {
+        res.status(400).send("Skills cannot be more than 10");
+    }
     try {
-        const updatedUser = await User.findByIdAndUpdate(user._id, user, {
+        const updatedUser = await User.findByIdAndUpdate({ _id: userId }, user, {
             returnDocument: "after",
             runValidators: true
         });
