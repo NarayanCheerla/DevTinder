@@ -9,17 +9,18 @@ const authRouter = express.Router();
 authRouter.post("/signup", async (req, res) => {
     try {
         validateSignUpDate(req);
-        const { firstName, lastName, emailId, password } = req.body;
+        const { firstName, lastName, emailId, password,gender } = req.body;
         const passwordHash = await bcrypt.hash(password, 10)
         const user = new User({
             firstName,
             lastName,
             emailId,
+            gender,
             password: passwordHash
         });
 
         await user.save();
-        res.send("User added successfull..");
+        res.send("User added successfully..");
     } catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
