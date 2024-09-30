@@ -9,7 +9,7 @@ const authRouter = express.Router();
 authRouter.post("/signup", async (req, res) => {
     try {
         validateSignUpDate(req);
-        const { firstName, lastName, emailId, password,gender } = req.body;
+        const { firstName, lastName, emailId, password, gender } = req.body;
         const passwordHash = await bcrypt.hash(password, 10)
         const user = new User({
             firstName,
@@ -19,8 +19,15 @@ authRouter.post("/signup", async (req, res) => {
             password: passwordHash
         });
 
-        await user.save();
-        res.send("User added successfully..");
+        const savedUser = await user.save();
+        const token = await savedUser.getJWT();
+        res.cookie("token", token, {
+            expires: new Date(Date.now() + 8 * 360000)
+        });
+        res.json({
+            message: "User Added successfully !",
+            data: savedUser
+        });
     } catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
@@ -38,7 +45,7 @@ authRouter.post("/login", async (req, res) => {
         if (isPasswordValid) {
             const token = await user.getJWT();
             res.cookie("token", token, {
-                expires: new Date(Date.now() + 1 * 360000)
+                expires: new Date(Date.now() + 8 * 360000)
             });
             res.send(user);
         } else {
